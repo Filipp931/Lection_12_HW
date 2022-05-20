@@ -28,22 +28,27 @@ public class ExecutionManagerImpl implements ExecutionManager{
     private class MyThread implements Runnable {
         @Override
         public void run() {
-            System.out.printf("%s starting\n", Thread.currentThread().getName());
-            Runnable task;
-            task = queue.poll();
-            if (task == null) {
-                if (callback != null) {
-                    synchronized (callback) {
-                        if (callback != null) {
-                            System.out.printf("\n%s running callback\n", Thread.currentThread().getName());
-                            callback.run();
+            while (!Thread.currentThread().isInterrupted()) {
+                System.out.printf("%s starting\n", Thread.currentThread().getName());
+                Runnable task;
+                task = queue.poll();
+                if (task == null) {
+                    if (callback != null) {
+                        synchronized (callback) {
+                            if (callback != null) {
+                                System.out.printf("\n%s running callback\n", Thread.currentThread().getName());
+                                callback.run();
+                            }
                         }
                     }
+                    Thread.currentThread().interrupt();
+                } else {
+                    System.out.printf("%s running task\n", Thread.currentThread().getName());
+                    task.run();
+                    synchronized (statesMap) {
+                        statesMap.put(TaskStates.COMPLETED, statesMap.get(TaskStates.COMPLETED) + 1);
+                    }
                 }
-            } else {
-                System.out.printf("%s running task\n", Thread.currentThread().getName());
-                task.run();
-                statesMap.put(TaskStates.COMPLETED, statesMap.get(TaskStates.COMPLETED) + 1);
             }
         }
     }
@@ -52,7 +57,9 @@ public class ExecutionManagerImpl implements ExecutionManager{
     private class Handler implements Thread.UncaughtExceptionHandler{
         @Override
         public void uncaughtException(Thread t, Throwable e) {
-            statesMap.put(TaskStates.FAILED, statesMap.get(TaskStates.FAILED) + 1);
+            synchronized (statesMap) {
+                statesMap.put(TaskStates.FAILED, statesMap.get(TaskStates.FAILED) + 1);
+            }
             generateAndStartThreads(1);
         }
     }

@@ -44,7 +44,6 @@ class ExecutionManagerImplTest {
         Context context = executionManager.execute(callback, tasks);
         while (!context.isFinished()) {
             System.out.println(context.toString());
-            Thread.sleep(2000);
         }
         System.out.println(context.toString());
         System.out.println("Finished");

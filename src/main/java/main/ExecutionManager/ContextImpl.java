@@ -42,7 +42,7 @@ public class ContextImpl implements Context{
 
     @Override
     public boolean isFinished() {
-        return (numberOfTasks == (getCompletedTaskCount() + getCompletedTaskCount()));
+        return (numberOfTasks == (getCompletedTaskCount() + getInterruptedTaskCount()));
     }
 
     @Override
