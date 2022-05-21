@@ -62,5 +62,24 @@ class ExecutionManagerImplTest {
         System.out.println(context.toString());
         System.out.println("Finished");
     }
+    @Test
+    public void ExecutionManagerExceptionTest() throws InterruptedException {
+        init();
+        tasks[13] = new Runnable() {
+            @Override
+            public void run() {
+                tasks[21] = null;
+            }
+        };
+        ExecutionManager executionManager = new ExecutionManagerImpl();
+        Context context = executionManager.execute(callback, tasks);
+        while (!context.isFinished()) {
+            System.out.println(context.toString());
+            Thread.sleep(500);
+        }
+        System.out.println(context.toString());
+        System.out.println("Finished");
+    }
+
 
 }
