@@ -25,12 +25,12 @@ class ExecutionManagerImplTest {
                 }
             }
         };
-        tasks = new Runnable[10];
+        tasks = new Runnable[20];
         for (int i = 0; i < tasks.length; i++) {
             tasks[i] = () -> {
-                System.out.println("TASK");
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(new Random().nextInt(4000));
+                    System.out.println("TASK");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -38,16 +38,29 @@ class ExecutionManagerImplTest {
         }
     }
     @Test
-    public void ExecutionManagerImplTest() throws InterruptedException {
+    public void ExecutionManagerStandardTest() throws InterruptedException {
         init();
         ExecutionManager executionManager = new ExecutionManagerImpl();
         Context context = executionManager.execute(callback, tasks);
         while (!context.isFinished()) {
             System.out.println(context.toString());
+            Thread.sleep(500);
         }
         System.out.println(context.toString());
         System.out.println("Finished");
     }
-
+    @Test
+    public void ExecutionManagerInterruptTest() throws InterruptedException {
+        init();
+        ExecutionManager executionManager = new ExecutionManagerImpl();
+        Context context = executionManager.execute(callback, tasks);
+        System.out.println(context.toString());
+        Thread.sleep(2000);
+        System.out.println("Interrupting!");
+        context.interrupt();
+        Thread.sleep(4000);
+        System.out.println(context.toString());
+        System.out.println("Finished");
+    }
 
 }

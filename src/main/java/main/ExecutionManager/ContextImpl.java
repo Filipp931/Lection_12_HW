@@ -7,7 +7,7 @@ public class ContextImpl implements Context{
     private final Map<TaskStates, Integer> statesMap;
     private final Queue<Runnable> queue;
     private int numberOfInterruptedTasks;
-    private int numberOfTasks;
+    private final int numberOfTasks;
 
     public ContextImpl(Map<TaskStates, Integer> statesMap, Queue<Runnable> queue, int numberOfTasks) {
         this.statesMap = statesMap;
@@ -34,9 +34,13 @@ public class ContextImpl implements Context{
 
     @Override
     public void interrupt() {
-        while(!queue.isEmpty()){
-            queue.poll();
-            numberOfInterruptedTasks++;
+        if (!queue.isEmpty()) {
+            synchronized (queue) {
+                if (!queue.isEmpty()) {
+                    numberOfInterruptedTasks = queue.size();
+                    queue.clear();
+                }
+            }
         }
     }
 

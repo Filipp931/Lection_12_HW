@@ -11,10 +11,11 @@ public class ExecutionManagerImpl implements ExecutionManager{
     private volatile Runnable callback;
     @Override
     public Context execute(Runnable callback, Runnable... tasks) {
+        Context context = new ContextImpl(statesMap,queue, tasks.length);
         this.callback = callback;
         queue.addAll(Arrays.asList(tasks));
         generateAndStartThreads(10);
-        return new ContextImpl(statesMap,queue, tasks.length);
+        return context;
     }
     private void generateAndStartThreads(int numberOfThreads){
         for (int i = 0; i < numberOfThreads; i++) {
@@ -28,8 +29,8 @@ public class ExecutionManagerImpl implements ExecutionManager{
     private class MyThread implements Runnable {
         @Override
         public void run() {
+            System.out.printf("%s starting\n", Thread.currentThread().getName());
             while (!Thread.currentThread().isInterrupted()) {
-                System.out.printf("%s starting\n", Thread.currentThread().getName());
                 Runnable task;
                 task = queue.poll();
                 if (task == null) {
@@ -38,6 +39,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
                             if (callback != null) {
                                 System.out.printf("\n%s running callback\n", Thread.currentThread().getName());
                                 callback.run();
+                                callback = null;
                             }
                         }
                     }
@@ -45,9 +47,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
                 } else {
                     System.out.printf("%s running task\n", Thread.currentThread().getName());
                     task.run();
-                    synchronized (statesMap) {
-                        statesMap.put(TaskStates.COMPLETED, statesMap.get(TaskStates.COMPLETED) + 1);
-                    }
+                    statesMap.put(TaskStates.COMPLETED, statesMap.get(TaskStates.COMPLETED) + 1);
                 }
             }
         }
@@ -57,10 +57,10 @@ public class ExecutionManagerImpl implements ExecutionManager{
     private class Handler implements Thread.UncaughtExceptionHandler{
         @Override
         public void uncaughtException(Thread t, Throwable e) {
-            synchronized (statesMap) {
-                statesMap.put(TaskStates.FAILED, statesMap.get(TaskStates.FAILED) + 1);
+            statesMap.put(TaskStates.FAILED, statesMap.get(TaskStates.FAILED) + 1);
+            if(!queue.isEmpty()){
+                generateAndStartThreads(1);
             }
-            generateAndStartThreads(1);
         }
     }
 
