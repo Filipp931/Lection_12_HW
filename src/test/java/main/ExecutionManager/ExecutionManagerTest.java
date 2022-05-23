@@ -1,19 +1,20 @@
 package main.ExecutionManager;
 
+import junit.framework.TestCase;
 import org.junit.Before;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.*;
 
-class ExecutionManagerImplTest {
-    static Runnable callback;
-    static Runnable[] tasks;
-
-    public static void init() {
+@RunWith(JUnit4.class)
+public class ExecutionManagerTest extends TestCase {
+    Runnable callback;
+    Runnable[] tasks;
+    @Before
+    public void init() {
         callback = new Runnable() {
             @Override
             public void run() {
@@ -80,6 +81,5 @@ class ExecutionManagerImplTest {
         System.out.println(context.toString());
         System.out.println("Finished");
     }
-
 
 }

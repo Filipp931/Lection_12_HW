@@ -1,14 +1,19 @@
 package main;
 
+import junit.framework.TestCase;
 import main.Task.CallableException;
 import main.Task.MyCallable;
 import main.Task.MyCallableThrowsE;
 import main.Task.Task;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 
 import java.util.concurrent.Callable;
-
-class TaskTest {
+@RunWith(JUnit4.class)
+public class TaskTest extends TestCase{
     @Test
     public void TaskTest(){
         Callable callable = new MyCallable();
@@ -33,16 +38,13 @@ class TaskTest {
     public void TaskExceptionTest(){
         Callable callable = new MyCallableThrowsE();
         Task task = new Task(callable);
-        for (int i = 0; i < 100; i++) {
-            Thread thread = new Thread(() -> {
+        new Thread(() -> {
                 try {
-                    task.get();
-                } catch (CallableException e) {
+                    System.out.println(task.get());
+                } catch (Exception e) {
                     System.out.println(e.getMessage());
                 }
-            });
-            thread.start();
-        }
+            }).start();
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {

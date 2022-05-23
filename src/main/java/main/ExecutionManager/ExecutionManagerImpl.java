@@ -8,7 +8,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
     private final List<Thread> myThreadPool = Collections.synchronizedList(new ArrayList<>());
     private final Map<TaskStates, Integer> statesMap = new ConcurrentHashMap<>();
     private final Queue<Runnable> queue = new ConcurrentLinkedDeque<>();
-    private volatile Runnable callback;
+    private Runnable callback;
     @Override
     public Context execute(Runnable callback, Runnable... tasks) {
         Context context = new ContextImpl(statesMap,queue, tasks.length);
@@ -57,6 +57,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
     private class Handler implements Thread.UncaughtExceptionHandler{
         @Override
         public void uncaughtException(Thread t, Throwable e) {
+            System.out.printf("Error in %s\n", Thread.currentThread().getName());
             statesMap.put(TaskStates.FAILED, statesMap.get(TaskStates.FAILED) + 1);
             if(!queue.isEmpty()){
                 generateAndStartThreads(1);
