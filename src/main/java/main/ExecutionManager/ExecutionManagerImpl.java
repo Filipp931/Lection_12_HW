@@ -8,7 +8,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
     private final List<Thread> myThreadPool = Collections.synchronizedList(new ArrayList<>());
     private final Map<TaskStates, Integer> statesMap = new ConcurrentHashMap<>();
     private final Queue<Runnable> queue = new ConcurrentLinkedDeque<>();
-    private Runnable callback;
+    private volatile Runnable callback;
     @Override
     public Context execute(Runnable callback, Runnable... tasks) {
         Context context = new ContextImpl(statesMap,queue, tasks.length);
